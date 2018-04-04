@@ -1,4 +1,19 @@
-calibrating = false;
+white = [255,255,255];
+red = [255,0,0];
+blue = [0,0,255];
+green = [0,255,0];
+dim = [1,1,1];
+black = [0,0,0];
+purple = [128, 0, 128];
+teal = [0, 128, 128];
+
+gs = {
+  calibrating: false,
+  mode: 'pc',
+  colors: [red, dim, blue, black, green],
+  lightMapping: lightMapping || [1,2,3,4,5],
+  playerIndex: 2
+}
 
 $(document).ready(function() {
   if (userId) $('#user-id').val(userId);
@@ -11,7 +26,8 @@ $(document).ready(function() {
   }
 
   $('#mode-hue').click(function() {
-    if ($(this).hasClass('selected')) return;
+    if (gs.mode == 'hue') return;
+    gs.mode = 'hue';
 
     $(this).addClass('selected');
     $('#mode-pc').removeClass('selected');
@@ -24,7 +40,8 @@ $(document).ready(function() {
   });
 
   $('#mode-pc').click(function() {
-    if ($(this).hasClass('selected')) return;
+    if (gs.mode == 'pc') return;
+    gs.mode = 'pc';
 
     $(this).addClass('selected');
     $('#mode-hue').removeClass('selected');
@@ -58,21 +75,68 @@ $(document).ready(function() {
   });
 
   $('.light').click(function(){
-    if (!calibrating) return;
+    if (!gs.calibrating) return;
 
     var clickedIndex = $(this).index()-1;
-    lightMapping[clickedIndex] = lights[lightIndex];
+    gs.lightMapping[clickedIndex] = lights[lightIndex];
 
     setLight(lights[lightIndex], '{"on": false}');
     lightIndex++;
     if (lightIndex < lights.length) {
       setLight(lights[lightIndex], '{"on": true}');
     } else {
-      calibrating = false;
+      gs.calibrating = false;
       setTimeout(()=>flourishLights(), 1000);
     }
   });
+
+  $('#start').click(function(){
+    updateColors();
+    updateLights();
+  });
+
+  $(document).keydown(function(e){
+    switch(e.which) {
+      case 37: // left arrow
+        gs.playerIndex = (gs.playerIndex+4)%5;
+        break;
+      case 39: // right arrow
+        gs.playerIndex = (gs.playerIndex+1)%5;
+        break;
+      default:
+        break;
+    }
+    updateColors();
+    updateLights();
+  });
 });
+
+function updateColors() {
+  for (var i = 0; i < 5; i++) {
+    gs.colors[i] = i == gs.playerIndex ? white : dim;
+  }
+}
+
+function updateLights() {
+  for (var i = 0; i < 5; i++) {
+    if (gs.mode == 'pc') {
+      $('.light').each(function(i){
+        $(this).css('background-color', rgbToStr(gs.colors[i]));
+      });
+    } else {
+      var state;
+      if (gs.colors[i] == black) state = '{"on": false}';
+      else {
+        var xy = rgb_to_cie.apply(null, gs.colors[i]);
+        var bri = Math.max.apply(null, gs.colors[i]);
+        state = `{"xy": [${xy}],
+                  "bri": ${bri},
+                  "transitiontime": 0}`;
+      }
+      setLight(gs.lightMapping[i], state);
+    }
+  }
+}
 
 function calibrateLights(data) {
   lights = getReachableLights(data);
@@ -81,9 +145,8 @@ function calibrateLights(data) {
     return;
   }
 
-  calibrating = true;
+  gs.calibrating = true;
   lightIndex = 0;
-  lightMapping = [-1,-1,-1,-1,-1];
 
   turnOffLights(lights);
   setLight(lights[lightIndex], '{"on": true}');
@@ -107,6 +170,7 @@ function turnOffLights(lights) {
 function setLight(light, state) {
   var currIp = $('#ip-address').val();
   var currId = $('#user-id').val();
+
   $.ajax({
     type: 'PUT',
     dataType: 'json',
@@ -116,9 +180,13 @@ function setLight(light, state) {
 }
 
 function flourishLights() {
-  turnOffLights(lightMapping);
+  turnOffLights(gs.lightMapping);
   for (var i = 0; i < 5; i++) {
-    setTimeout(setLight.bind(null,lightMapping[i],'{"on": true}'),
+    setTimeout(setLight.bind(null,gs.lightMapping[i],'{"on": true}'),
                400*i);
   }
+}
+
+function rgbToStr(rgb) {
+  return 'rgb('+rgb.join(', ')+')';
 }
