@@ -11,7 +11,6 @@ gs = {
   calibrating: false,
   mode: 'pc',
   playing: false,
-  oldColors: [0,0,0,0,0],
   colors: [0,0,0,0,0],
   lightMapping: lightMapping || [1,2,3,4,5],
 }
@@ -97,13 +96,13 @@ $(document).ready(function() {
     if (gs.playing) return;
 
     resetGame();
-    updateColors();
-    updateLights();
 
     $('#start, #controls').hide();
     $('#stop').show();
 
     gs.playing = true;
+    gs.updating = true;
+    updateGameState();
   });
 
   $('#stop').click(function(){
@@ -117,6 +116,7 @@ $(document).ready(function() {
     else resetLights();
 
     gs.playing = false;
+    gs.updating = false;
   });
 
   $(document).keydown(function(e){
@@ -137,14 +137,71 @@ $(document).ready(function() {
 });
 
 function resetGame() {
+  gs.startTime = Date.now();
+  gs.level = 1;
+  gs.updating = false;
+  gs.rate = 400;
+  gs.oldColors = [0,0,0,0,0];
   gs.playerIndex = 2;
   gs.leftEnemies = [];
   gs.rightEnemies = [];
 }
 
+function addLeftEnemy() {
+  gs.leftEnemies.push(4);
+}
+
+function addRightEnemy() {
+  gs.rightEnemies.push(0);
+}
+
+function updateGameState() {
+  if (!gs.updating) return;
+
+  gs.leftEnemies = gs.leftEnemies.reduce((c,v)=>{
+    if (v>0) c.push(v-1);
+    return c;
+  }, []);
+
+  gs.rightEnemies = gs.rightEnemies.reduce((c,v)=>{
+    if (v<4) c.push(v+1);
+    return c;
+  }, []);
+
+  switch (gs.level) {
+    case 1:
+      if (Math.random()>0.75 &&
+          gs.leftEnemies.length+gs.rightEnemies.length == 0) {
+        if (Math.random()>0.5) addLeftEnemy();
+        else addRightEnemy();
+      }
+      break;
+    case 2:
+      break;
+    case 3:
+      break;
+    case 4:
+      break;
+    default:
+      break;
+  }
+
+  updateColors();
+  updateLights();
+
+  setTimeout(()=>updateGameState(), gs.rate);
+}
+
 function updateColors() {
-  for (var i = 0; i < 5; i++) {
+  for (var i=0; i<5; i++) {
     gs.colors[i] = i == gs.playerIndex ? white : dim;
+  }
+  for (var i=0; i< gs.leftEnemies.length; i++) {
+    gs.colors[gs.leftEnemies[i]] = red;
+  }
+  for (var i=0; i< gs.rightEnemies.length; i++) {
+    var newColor = gs.colors[gs.rightEnemies[i]]==red ? purple : blue;
+    gs.colors[gs.rightEnemies[i]] = newColor;
   }
 }
 
