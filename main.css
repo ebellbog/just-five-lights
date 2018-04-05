@@ -33,6 +33,25 @@ body {
   to {color: #ff33aa;}
 }
 
+#stop {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 65px;
+  height: 65px;
+  line-height: 65px;
+  text-align: center;
+  color: #ddd;
+  font-size: 72px;
+  font-weight: 100;
+  user-select: none;
+  display: none;
+}
+
+#stop:hover {
+  color: #888;
+}
+
 #lights {
   display: flex;
   width: 100%;
@@ -52,7 +71,7 @@ body {
 }
 
 .light:hover {
-  background-color: #888;
+  background-color: #888!important;
 }
 
 #line {

@@ -10,6 +10,7 @@ teal = [0, 128, 128];
 gs = {
   calibrating: false,
   mode: 'pc',
+  playing: false,
   colors: [red, dim, blue, black, green],
   lightMapping: lightMapping || [1,2,3,4,5],
   playerIndex: 2
@@ -91,11 +92,32 @@ $(document).ready(function() {
   });
 
   $('#start').click(function(){
+    if (gs.playing) return;
+
     updateColors();
     updateLights();
+
+    $('#start, #controls').hide();
+    $('#stop').show();
+
+    gs.playing = true;
+  });
+
+  $('#stop').click(function(){
+    if (!gs.playing) return;
+
+    $(this).hide();
+    $('#start, #controls').show();
+
+    resetColors();
+    if (gs.mode == 'pc') updateLights();
+    else resetLights();
+
+    gs.playing = false;
   });
 
   $(document).keydown(function(e){
+    if (!gs.playing) return;
     switch(e.which) {
       case 37: // left arrow
         gs.playerIndex = (gs.playerIndex+4)%5;
@@ -184,6 +206,20 @@ function flourishLights() {
   for (var i = 0; i < 5; i++) {
     setTimeout(setLight.bind(null,gs.lightMapping[i],'{"on": true}'),
                400*i);
+  }
+}
+
+function resetColors() {
+  gs.colors = [];
+  for (var i=0; i<5; i++) {
+    gs.colors.push(white);
+  }
+}
+
+function resetLights() {
+  for (var i=0; i<5; i++) {
+    setLight(gs.lightMapping[i],
+             '{"hue":10000, "bri":200, "sat":75}');
   }
 }
 

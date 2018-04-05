@@ -12,24 +12,27 @@
 </head>
 <body>
 <div id="start">START ?</div>
+<div id="stop">x</div>
 <div id="lights">
   <div id="line"></div>
 </div>
-<span id="mode-label"> Play mode: </span>
-<div id="mode-toggle">
-  <div id="mode-pc" class="selected"> PC </div>
-  <div id="mode-hue"> Hue </div>
-</div>
-<div id="hue-settings">
-  <div class="setting">
-    <div> IP: </div>
-    <input id="ip-address" type="text" placeholder="192.168.0.0"/>
+<div id="controls">
+  <span id="mode-label"> Play mode: </span>
+  <div id="mode-toggle">
+    <div id="mode-pc" class="selected"> PC </div>
+    <div id="mode-hue"> Hue </div>
   </div>
-  <div class="setting">
-    <div> User ID: </div>
-    <input id="user-id" type="text" placeholder="abc123..."/>
+  <div id="hue-settings">
+    <div class="setting">
+      <div> IP: </div>
+      <input id="ip-address" type="text" placeholder="192.168.0.0"/>
+    </div>
+    <div class="setting">
+      <div> User ID: </div>
+      <input id="user-id" type="text" placeholder="abc123..."/>
+    </div>
+    <div id="calibrate">Calibrate</div>
   </div>
-  <div id="calibrate">Calibrate</div>
 </div>
 </body>
 </html>
