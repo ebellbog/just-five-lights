@@ -11,9 +11,9 @@ gs = {
   calibrating: false,
   mode: 'pc',
   playing: false,
-  colors: [red, dim, blue, black, green],
+  oldColors: [0,0,0,0,0],
+  colors: [0,0,0,0,0],
   lightMapping: lightMapping || [1,2,3,4,5],
-  playerIndex: 2
 }
 
 $(document).ready(function() {
@@ -32,6 +32,7 @@ $(document).ready(function() {
 
     $(this).addClass('selected');
     $('#mode-pc').removeClass('selected');
+    $('.light').addClass('inactive');
 
     $('#hue-settings').css({display:'flex'});
     setTimeout(()=>$('#hue-settings').animate({opacity:1},200), 300);
@@ -46,6 +47,7 @@ $(document).ready(function() {
 
     $(this).addClass('selected');
     $('#mode-hue').removeClass('selected');
+    $('.light').removeClass('inactive');
 
     $('#hue-settings').animate({opacity:0},200);
     setTimeout(()=>
@@ -94,6 +96,7 @@ $(document).ready(function() {
   $('#start').click(function(){
     if (gs.playing) return;
 
+    resetGame();
     updateColors();
     updateLights();
 
@@ -133,6 +136,12 @@ $(document).ready(function() {
   });
 });
 
+function resetGame() {
+  gs.playerIndex = 2;
+  gs.leftEnemies = [];
+  gs.rightEnemies = [];
+}
+
 function updateColors() {
   for (var i = 0; i < 5; i++) {
     gs.colors[i] = i == gs.playerIndex ? white : dim;
@@ -146,6 +155,8 @@ function updateLights() {
         $(this).css('background-color', rgbToStr(gs.colors[i]));
       });
     } else {
+      if (gs.oldColors[i] == gs.colors[i]) continue;
+
       var state;
       if (gs.colors[i] == black) state = '{"on": false}';
       else {
@@ -156,6 +167,7 @@ function updateLights() {
                   "transitiontime": 0}`;
       }
       setLight(gs.lightMapping[i], state);
+      gs.oldColors[i] = gs.colors[i];
     }
   }
 }

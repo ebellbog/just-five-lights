@@ -74,6 +74,10 @@ body {
   background-color: #888!important;
 }
 
+.light.inactive {
+  background-image: radial-gradient(white, black);
+}
+
 #line {
   width: 100%;
   height: 2px;
