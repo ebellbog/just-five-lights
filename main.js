@@ -85,7 +85,7 @@ $(document).ready(function() {
     setLight(lights[lightIndex], '{"on": false}');
     lightIndex++;
     if (lightIndex < lights.length) {
-      setLight(lights[lightIndex], '{"on": true}');
+      setLight(lights[lightIndex], '{"on": true, "bri": 180}');
     } else {
       gs.calibrating = false;
       setTimeout(()=>flourishLights(), 1000);
@@ -95,7 +95,7 @@ $(document).ready(function() {
   $('#start').click(function(){
     if (gs.playing) return;
 
-    resetGame();
+    startGame();
 
     $('#start, #controls').hide();
     $('#stop').show();
@@ -111,12 +111,13 @@ $(document).ready(function() {
     $(this).hide();
     $('#start, #controls').show();
 
+    gs.playing = false;
+    gs.updating = false;
+
     resetColors();
     if (gs.mode == 'pc') updateLights();
     else resetLights();
 
-    gs.playing = false;
-    gs.updating = false;
   });
 
   $(document).keydown(function(e){
@@ -128,6 +129,9 @@ $(document).ready(function() {
       case 39: // right arrow
         gs.playerIndex = (gs.playerIndex+1)%5;
         break;
+      case 32: // space bar (for testing)
+        levelUp();
+        break;
       default:
         break;
     }
@@ -136,15 +140,20 @@ $(document).ready(function() {
   });
 });
 
-function resetGame() {
-  gs.startTime = Date.now();
-  gs.level = 1;
-  gs.updating = false;
-  gs.rate = 400;
+function startLevel() {
   gs.oldColors = [0,0,0,0,0];
   gs.playerIndex = 2;
   gs.leftEnemies = [];
   gs.rightEnemies = [];
+  gs.startTime = Date.now();
+}
+
+function startGame() {
+  gs.level = 1;
+  gs.updating = false;
+  gs.rate = 400;
+
+  startLevel();
 }
 
 function addLeftEnemy() {
@@ -153,6 +162,22 @@ function addLeftEnemy() {
 
 function addRightEnemy() {
   gs.rightEnemies.push(0);
+}
+
+function levelUp() {
+  gs.updating = 0;
+  gs.playing = 0;
+  for (var i=0; i<6; i++) {
+    var func = i%2 ? flashLights : turnOffLights;
+    setTimeout(func, 1000*i);
+  }
+  setTimeout(()=>{
+    if (gs.level < 5) gs.level++;
+    gs.updating = 1;
+    gs.playing = 1;
+    startLevel();
+    updateGameState();
+  }, 6500);
 }
 
 function updateGameState() {
@@ -167,6 +192,11 @@ function updateGameState() {
     if (v<4) c.push(v+1);
     return c;
   }, []);
+
+  /*if (Date.now()-gs.startTime > 10000) {
+    levelUp();
+    return;
+  }*/
 
   switch (gs.level) {
     case 1:
@@ -240,7 +270,7 @@ function calibrateLights(data) {
   lightIndex = 0;
 
   turnOffLights(lights);
-  setLight(lights[lightIndex], '{"on": true}');
+  setLight(lights[lightIndex], '{"on": true, "bri": 180}');
 }
 
 function getReachableLights(data) {
@@ -253,8 +283,37 @@ function getReachableLights(data) {
 }
 
 function turnOffLights(lights) {
-  for (var i = 0; i < lights.length; i++) {
-    setLight(lights[i], '{"on": false}');
+  var state = '{"on": false, "transitiontime":0}';
+  if (lights) {
+    for (var i = 0; i < lights.length; i++) {
+      setLight(lights[i], state);
+    }
+  } else if (gs.mode == 'hue') {
+    for (var i=0; i<5; i++) {
+      setLight(lightMapping[i], state);
+    }
+  } else {
+    gs.colors = [];
+    for (var i=0; i<5; i++) {
+      gs.colors.push(black);
+    }
+    updateLights();
+  }
+}
+
+function flashLights() {
+  if (gs.mode == 'hue') {
+    for (var i=0; i<5; i++) {
+      setLight(lightMapping[i],
+          '{"on": true, "bri": 254, "sat":0, "transitiontime":0}'
+      );
+    }
+  } else {
+    gs.colors = [];
+    for (var i=0; i<5; i++) {
+      gs.colors.push(white);
+    }
+    updateLights();
   }
 }
 
