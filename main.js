@@ -169,7 +169,7 @@ function levelUp() {
   gs.playing = 0;
   for (var i=0; i<6; i++) {
     var func = i%2 ? flashLights : turnOffLights;
-    setTimeout(func, 1000*i);
+    setTimeout(func, 600*i);
   }
   setTimeout(()=>{
     if (gs.level < 5) gs.level++;
@@ -177,11 +177,19 @@ function levelUp() {
     gs.playing = 1;
     startLevel();
     updateGameState();
-  }, 6500);
+  }, 4200);
 }
 
 function updateGameState() {
   if (!gs.updating) return;
+
+  if (gs.rightEnemies.indexOf(gs.playerIndex)+
+      gs.leftEnemies.indexOf(gs.playerIndex) > -2) {
+    gs.updating = 0;
+    gs.playing = 0;
+    alert("Gameover :(");
+    return;
+  }
 
   gs.leftEnemies = gs.leftEnemies.reduce((c,v)=>{
     if (v>0) c.push(v-1);
@@ -193,27 +201,54 @@ function updateGameState() {
     return c;
   }, []);
 
-  /*if (Date.now()-gs.startTime > 10000) {
-    levelUp();
-    return;
-  }*/
-
+  var levelDuration;
   switch (gs.level) {
     case 1:
-      if (Math.random()>0.75 &&
+      levelDuration = 10;
+      if (Math.random() > 0.7 && gs.rightEnemies.length == 0) {
+        addRightEnemy();
+      }
+      break;
+    case 2:
+      levelDuration = 20;
+      if (Math.random() > 0.65 &&
           gs.leftEnemies.length+gs.rightEnemies.length == 0) {
         if (Math.random()>0.5) addLeftEnemy();
         else addRightEnemy();
       }
       break;
-    case 2:
-      break;
     case 3:
+      levelDuration = 20;
+      if (Math.random() > 0.6
+          && gs.rightEnemies.length < 2
+          && gs.rightEnemies.indexOf(4) == -1) {
+        addRightEnemy();
+      }
       break;
     case 4:
+      levelDuration = 16;
+      if (Math.random() > 0.6
+          && gs.leftEnemies.length < 3
+          && gs.leftEnemies.indexOf(0) == -1) {
+        addLeftEnemy();
+      }
+      break;
+    case 5:
+      levelDuration = 12;
+      if (Math.random() > 0.6 &&
+          gs.leftEnemies.length+gs.rightEnemies.length < 2) {
+        if (Math.random()>0.5) addLeftEnemy();
+        else addRightEnemy();
+      }
       break;
     default:
       break;
+  }
+
+  levelDuration *= 1000;
+  if (Date.now()-gs.startTime > levelDuration) {
+    levelUp();
+    return;
   }
 
   updateColors();
@@ -227,10 +262,10 @@ function updateColors() {
     gs.colors[i] = i == gs.playerIndex ? white : dim;
   }
   for (var i=0; i< gs.leftEnemies.length; i++) {
-    gs.colors[gs.leftEnemies[i]] = red;
+    gs.colors[gs.leftEnemies[i]] = blue;
   }
   for (var i=0; i< gs.rightEnemies.length; i++) {
-    var newColor = gs.colors[gs.rightEnemies[i]]==red ? purple : blue;
+    var newColor = gs.colors[gs.rightEnemies[i]]==blue ? purple : red;
     gs.colors[gs.rightEnemies[i]] = newColor;
   }
 }
