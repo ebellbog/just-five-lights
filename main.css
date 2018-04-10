@@ -45,11 +45,35 @@ body {
   font-size: 72px;
   font-weight: 100;
   user-select: none;
+  cursor: pointer;
   display: none;
 }
 
 #stop:hover {
   color: #888;
+}
+
+#score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  left: 50%;
+  top: 12vh;
+  transform: translate(-50%,0);
+  color: white;
+  opacity: 0;
+  user-select: none;
+  z-index: -1;
+}
+
+#score div:nth-child(1) {
+  font-weight: 100;
+  font-size: 36px;
+  margin-bottom: -15px;
+}
+#score div:nth-child(2) {
+  font-size: 100px;
 }
 
 #lights {

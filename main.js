@@ -99,6 +99,7 @@ $(document).ready(function() {
 
     $('#start, #controls').hide();
     $('#stop').show();
+    $('#score').css('opacity',1);
 
     gs.playing = true;
     gs.updating = true;
@@ -110,6 +111,7 @@ $(document).ready(function() {
 
     $(this).hide();
     $('#start, #controls').show();
+    $('#score').css('opacity',0);
 
     gs.playing = false;
     gs.updating = false;
@@ -150,8 +152,9 @@ function startLevel() {
 
 function startGame() {
   gs.level = 1;
+  gs.score = 0;
   gs.updating = false;
-  gs.rate = 400;
+  gs.rate = 500;
 
   startLevel();
 }
@@ -165,6 +168,8 @@ function addRightEnemy() {
 }
 
 function levelUp() {
+  if (gs.level >= 5) return;
+
   gs.updating = 0;
   gs.playing = 0;
   for (var i=0; i<6; i++) {
@@ -172,7 +177,7 @@ function levelUp() {
     setTimeout(func, 600*i);
   }
   setTimeout(()=>{
-    if (gs.level < 5) gs.level++;
+    gs.level++;
     gs.updating = 1;
     gs.playing = 1;
     startLevel();
@@ -185,9 +190,8 @@ function updateGameState() {
 
   if (gs.rightEnemies.indexOf(gs.playerIndex)+
       gs.leftEnemies.indexOf(gs.playerIndex) > -2) {
-    gs.updating = 0;
-    gs.playing = 0;
     alert("Gameover :(");
+    setTimeout(()=>$('#stop').click(), 500);
     return;
   }
 
@@ -202,14 +206,18 @@ function updateGameState() {
   }, []);
 
   var levelDuration;
+  var multiplier;
   switch (gs.level) {
     case 1:
+      multiplier = 1;
       levelDuration = 10;
       if (Math.random() > 0.7 && gs.rightEnemies.length == 0) {
         addRightEnemy();
       }
       break;
     case 2:
+      gs.rate = 450;
+      multiplier = 1;
       levelDuration = 20;
       if (Math.random() > 0.65 &&
           gs.leftEnemies.length+gs.rightEnemies.length == 0) {
@@ -218,6 +226,8 @@ function updateGameState() {
       }
       break;
     case 3:
+      gs.rate = 400;
+      multiplier = 2;
       levelDuration = 20;
       if (Math.random() > 0.6
           && gs.rightEnemies.length < 2
@@ -226,6 +236,7 @@ function updateGameState() {
       }
       break;
     case 4:
+      multiplier = 3;
       levelDuration = 16;
       if (Math.random() > 0.6
           && gs.leftEnemies.length < 3
@@ -234,7 +245,8 @@ function updateGameState() {
       }
       break;
     case 5:
-      levelDuration = 12;
+      multiplier = 5;
+      levelDuration = 1000; // effectively unlimited
       if (Math.random() > 0.6 &&
           gs.leftEnemies.length+gs.rightEnemies.length < 2) {
         if (Math.random()>0.5) addLeftEnemy();
@@ -250,6 +262,9 @@ function updateGameState() {
     levelUp();
     return;
   }
+
+  gs.score += multiplier;
+  $('#score div:nth-child(2)').html(gs.score);
 
   updateColors();
   updateLights();
@@ -356,11 +371,19 @@ function setLight(light, state) {
   var currIp = $('#ip-address').val();
   var currId = $('#user-id').val();
 
+  var reqStart = Date.now();
   $.ajax({
     type: 'PUT',
     dataType: 'json',
     data: state,
-    url: `http://${currIp}/api/${currId}/lights/${light}/state`
+    url: `http://${currIp}/api/${currId}/lights/${light}/state`,
+    success: ()=>{
+      var latency = Date.now()-reqStart;
+      if (latency > 250) {
+        alert("Warning: lights unresponsive due "+
+              "to low network speeds");
+      }
+    }
   });
 }
 
