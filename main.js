@@ -7,12 +7,28 @@ black = [0,0,0];
 purple = [128, 0, 128];
 teal = [0, 128, 128];
 
+levelData = [
+  {'multiplier': 1, 'duration': 10},
+  {'multiplier': 1, 'duration': 20},
+  {'multiplier': 2, 'duration': 20},
+  {'multiplier': 3, 'duration': 16},
+  {'multiplier': 5, 'duration': 1000}
+]
+
 gs = {
   calibrating: false,
   mode: 'pc',
   playing: false,
   colors: [0,0,0,0,0],
   lightMapping: lightMapping || [1,2,3,4,5],
+}
+
+function getMultiplier() {
+  return levelData[gs.level-1].multiplier;
+}
+
+function getDuration() {
+  return levelData[gs.level-1].duration*1000;
 }
 
 $(document).ready(function() {
@@ -95,11 +111,11 @@ $(document).ready(function() {
   $('#start').click(function(){
     if (gs.playing) return;
 
-    startGame();
-
-    $('#start, #controls').hide();
+    $('#start, #controls, #score div:nth-child(3)').hide();
     $('#stop').show();
     $('#score').css('opacity',1);
+
+    startGame();
 
     gs.playing = true;
     gs.updating = true;
@@ -123,22 +139,25 @@ $(document).ready(function() {
   });
 
   $(document).keydown(function(e){
-    if (!gs.playing) return;
     switch(e.which) {
+      case 13: // return
+        if (gs.playing) $('#stop').click();
+        else $('#start').click();
+        break;
       case 37: // left arrow
-        gs.playerIndex = (gs.playerIndex+4)%5;
+        if (gs.playing) gs.playerIndex = (gs.playerIndex+4)%5;
         break;
       case 39: // right arrow
-        gs.playerIndex = (gs.playerIndex+1)%5;
-        break;
-      case 32: // space bar (for testing)
-        levelUp();
+        if (gs.playing) gs.playerIndex = (gs.playerIndex+1)%5;
         break;
       default:
         break;
     }
-    updateColors();
-    updateLights();
+
+    if (gs.playing) {
+      updateColors();
+      updateLights();
+    }
   });
 });
 
@@ -148,10 +167,15 @@ function startLevel() {
   gs.leftEnemies = [];
   gs.rightEnemies = [];
   gs.startTime = Date.now();
+
+  var multiplier = getMultiplier();
+  if (multiplier > 1) {
+    $('#score div:nth-child(3)').html(`x${multiplier}`).show();
+  }
 }
 
-function startGame() {
-  gs.level = 1;
+function startGame(level) {
+  gs.level = level || 1;
   gs.score = 0;
   gs.updating = false;
   gs.rate = 500;
@@ -205,20 +229,14 @@ function updateGameState() {
     return c;
   }, []);
 
-  var levelDuration;
-  var multiplier;
   switch (gs.level) {
     case 1:
-      multiplier = 1;
-      levelDuration = 10;
       if (Math.random() > 0.7 && gs.rightEnemies.length == 0) {
         addRightEnemy();
       }
       break;
     case 2:
       gs.rate = 450;
-      multiplier = 1;
-      levelDuration = 20;
       if (Math.random() > 0.65 &&
           gs.leftEnemies.length+gs.rightEnemies.length == 0) {
         if (Math.random()>0.5) addLeftEnemy();
@@ -227,8 +245,6 @@ function updateGameState() {
       break;
     case 3:
       gs.rate = 400;
-      multiplier = 2;
-      levelDuration = 20;
       if (Math.random() > 0.6
           && gs.rightEnemies.length < 2
           && gs.rightEnemies.indexOf(4) == -1) {
@@ -236,8 +252,6 @@ function updateGameState() {
       }
       break;
     case 4:
-      multiplier = 3;
-      levelDuration = 16;
       if (Math.random() > 0.6
           && gs.leftEnemies.length < 3
           && gs.leftEnemies.indexOf(0) == -1) {
@@ -245,8 +259,6 @@ function updateGameState() {
       }
       break;
     case 5:
-      multiplier = 5;
-      levelDuration = 1000; // effectively unlimited
       if (Math.random() > 0.6 &&
           gs.leftEnemies.length+gs.rightEnemies.length < 2) {
         if (Math.random()>0.5) addLeftEnemy();
@@ -257,13 +269,12 @@ function updateGameState() {
       break;
   }
 
-  levelDuration *= 1000;
-  if (Date.now()-gs.startTime > levelDuration) {
+  if (Date.now()-gs.startTime > getDuration()) {
     levelUp();
     return;
   }
 
-  gs.score += multiplier;
+  gs.score += getMultiplier();
   $('#score div:nth-child(2)').html(gs.score);
 
   updateColors();

@@ -60,6 +60,7 @@ body {
   position: absolute;
   left: 50%;
   top: 12vh;
+  width: 200px;
   transform: translate(-50%,0);
   color: white;
   opacity: 0;
@@ -74,6 +75,19 @@ body {
 }
 #score div:nth-child(2) {
   font-size: 100px;
+}
+#score div:nth-child(3) {
+  background-color: teal;
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  height: 30px;
+  width: 40px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 24px;
+  display: none;
 }
 
 #lights {
