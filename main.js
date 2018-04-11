@@ -11,7 +11,7 @@ levelData = [
   {'multiplier': 1, 'duration': 10},
   {'multiplier': 1, 'duration': 20},
   {'multiplier': 2, 'duration': 20},
-  {'multiplier': 3, 'duration': 16},
+  {'multiplier': 3, 'duration': 18},
   {'multiplier': 5, 'duration': 1000}
 ]
 
@@ -40,6 +40,10 @@ $(document).ready(function() {
     var $light = $(document.createElement('div'));
     $light.addClass('light');
     $('#lights').append($light);
+
+    var $levelBtn = $(document.createElement('div'));
+    $levelBtn.html(`lv.${i+1}`);
+    $('#level-btns').append($levelBtn);
   }
 
   $('#mode-hue').click(function() {
@@ -115,7 +119,7 @@ $(document).ready(function() {
   });
 
   $('#stop').click(function(){
-    if (!gs.playing) return;
+    if (!gs.updating) return;
 
     $(this).hide();
     $('#start, #controls').show();
@@ -139,20 +143,20 @@ $(document).ready(function() {
   $(document).keydown(function(e){
     switch(e.which) {
       case 13: // return
-        if (gs.playing) $('#stop').click();
-        else $('#start').click();
+        if (gs.updating) $('#stop').click();
+        else if (!gs.playing) $('#start').click();
         break;
       case 37: // left arrow
-        if (gs.playing) gs.playerIndex = (gs.playerIndex+4)%5;
+        if (gs.updating) gs.playerIndex = (gs.playerIndex+4)%5;
         break;
       case 39: // right arrow
-        if (gs.playing) gs.playerIndex = (gs.playerIndex+1)%5;
+        if (gs.updating) gs.playerIndex = (gs.playerIndex+1)%5;
         break;
       default:
         break;
     }
 
-    if (gs.playing) {
+    if (gs.updating) {
       updateColors();
       updateLights();
     }
@@ -202,7 +206,6 @@ function levelUp() {
   if (gs.level >= 5) return;
 
   gs.updating = 0;
-  gs.playing = 0;
   for (var i=0; i<6; i++) {
     var func = i%2 ? flashLights : turnOffLights;
     setTimeout(func, 600*i);
@@ -210,7 +213,6 @@ function levelUp() {
   setTimeout(()=>{
     gs.level++;
     gs.updating = 1;
-    gs.playing = 1;
     startLevel();
     updateGameState();
   }, 4200);
