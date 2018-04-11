@@ -123,7 +123,7 @@ $(document).ready(function() {
 
     $(this).hide();
     $('#start, #controls').show();
-    $('#score').css('visibility', 'hidden');
+    $('#score, #hints').css('visibility', 'hidden');
 
     gs.playing = false;
     gs.updating = false;
@@ -175,12 +175,14 @@ function startLevel() {
   if (multiplier > 1) {
     $('#score div:nth-child(3)').html(`x${multiplier}`).show();
   }
+
+  updateHints();
 }
 
 function startGame(level) {
   $('#start, #controls, #score div:nth-child(3)').hide();
   $('#stop').show();
-  $('#score').css('visibility', 'visible');
+  $('#score, #hints').css('visibility', 'visible');
   $('#level-btns').css('visibility', 'hidden');
 
   gs.level = level || 1;
@@ -225,6 +227,55 @@ function updateLevelBtns() {
   $('#level-btns div').each((i,div)=>{
     if (i < gs.levelsUnlocked) $(div).addClass('unlocked');
   });
+}
+
+function updateHints() {
+  $('#rarr, #larr').removeClass('active');
+  $('#balls').empty();
+
+  var $ball = $(document.createElement('div'))
+              .addClass('ball').html('!');
+  var $redBall = $ball.clone().addClass('red');
+  var $blueBall = $ball.clone().addClass('blue');
+
+  var $conj = $(document.createElement('div'))
+              .addClass('conjunction');
+  var $or = $conj.clone().addClass('or').html('&#47;');
+  var $and = $conj.clone().addClass('and').html('&amp;');
+
+  switch(gs.level) {
+    case 1:
+      $('#rarr').addClass('active');
+      $('#balls').append($redBall);
+      break;
+    case 2:
+      $('#rarr').addClass('active');
+      $('#larr').addClass('active');
+      $('#balls').append($blueBall)
+                 .append($or)
+                 .append($redBall);
+      break;
+    case 3:
+      $('#rarr').addClass('active');
+      $('#balls').append($redBall.clone())
+                 .append($redBall);
+      break;
+    case 4:
+      $('#larr').addClass('active');
+      $('#balls').append($blueBall.clone())
+                 .append($blueBall.clone())
+                 .append($blueBall);
+      break;
+    case 5:
+      $('#rarr').addClass('active');
+      $('#larr').addClass('active');
+      $('#balls').append($blueBall)
+                 .append($and)
+                 .append($redBall);
+      break;
+    default:
+      break;
+  }
 }
 
 function updateGameState() {
@@ -411,6 +462,7 @@ function setLight(light, state) {
       if (latency > 250) {
         alert("Warning: lights unresponsive due "+
               "to low network speeds");
+        $('#stop').click();
       }
     }
   });
