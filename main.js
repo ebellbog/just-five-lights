@@ -19,6 +19,7 @@ gs = {
   calibrating: false,
   mode: 'pc',
   playing: false,
+  levelsUnlocked: 0,
   colors: [0,0,0,0,0],
   lightMapping: lightMapping || [1,2,3,4,5],
 }
@@ -110,16 +111,7 @@ $(document).ready(function() {
 
   $('#start').click(function(){
     if (gs.playing) return;
-
-    $('#start, #controls, #score div:nth-child(3)').hide();
-    $('#stop').show();
-    $('#score').css('opacity',1);
-
     startGame();
-
-    gs.playing = true;
-    gs.updating = true;
-    updateGameState();
   });
 
   $('#stop').click(function(){
@@ -127,7 +119,7 @@ $(document).ready(function() {
 
     $(this).hide();
     $('#start, #controls').show();
-    $('#score').css('opacity',0);
+    $('#score').css('visibility', 'hidden');
 
     gs.playing = false;
     gs.updating = false;
@@ -136,6 +128,12 @@ $(document).ready(function() {
     if (gs.mode == 'pc') updateLights();
     else resetLights();
 
+    updateLevelBtns();
+  });
+
+  $('#level-btns').on('click','.unlocked', (e)=>{
+    var level = $(e.target).index()+1;
+    startGame(level);
   });
 
   $(document).keydown(function(e){
@@ -167,6 +165,7 @@ function startLevel() {
   gs.leftEnemies = [];
   gs.rightEnemies = [];
   gs.startTime = Date.now();
+  gs.levelsUnlocked = Math.max(gs.levelsUnlocked, gs.level);
 
   var multiplier = getMultiplier();
   if (multiplier > 1) {
@@ -175,12 +174,20 @@ function startLevel() {
 }
 
 function startGame(level) {
+  $('#start, #controls, #score div:nth-child(3)').hide();
+  $('#stop').show();
+  $('#score').css('visibility', 'visible');
+  $('#level-btns').css('visibility', 'hidden');
+
   gs.level = level || 1;
   gs.score = 0;
-  gs.updating = false;
   gs.rate = 500;
 
   startLevel();
+
+  gs.playing = true;
+  gs.updating = true;
+  updateGameState();
 }
 
 function addLeftEnemy() {
@@ -207,6 +214,15 @@ function levelUp() {
     startLevel();
     updateGameState();
   }, 4200);
+}
+
+function updateLevelBtns() {
+  if (!gs.levelsUnlocked ) return;
+
+  $('#level-btns').css('visibility','visible');
+  $('#level-btns div').each((i,div)=>{
+    if (i < gs.levelsUnlocked) $(div).addClass('unlocked');
+  });
 }
 
 function updateGameState() {
