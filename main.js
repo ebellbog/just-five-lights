@@ -188,6 +188,8 @@ function startGame(level) {
   gs.level = level || 1;
   gs.score = 0;
   gs.rate = 500;
+  gs.alerted = false;
+  gs.latencyWarnings = 0;
 
   startLevel();
 
@@ -459,7 +461,9 @@ function setLight(light, state) {
     url: `http://${currIp}/api/${currId}/lights/${light}/state`,
     success: ()=>{
       var latency = Date.now()-reqStart;
-      if (latency > 250) {
+      if (latency > 250) gs.latencyWarnings++;
+      if (gs.latencyWarnings > 3 && !gs.alerted) {
+        gs.alerted = true;
         alert("Warning: lights unresponsive due "+
               "to low network speeds");
         $('#stop').click();
