@@ -20,6 +20,7 @@ gs = {
   mode: 'pc',
   playing: false,
   levelsUnlocked: 0,
+  highScore: 0,
   colors: [0,0,0,0,0],
   lightMapping: lightMapping || [1,2,3,4,5],
 }
@@ -133,6 +134,7 @@ $(document).ready(function() {
     else resetLights();
 
     updateLevelBtns();
+    updateHighScore();
   });
 
   $('#level-btns').on('click','.unlocked', (e)=>{
@@ -180,7 +182,7 @@ function startLevel() {
 }
 
 function startGame(level) {
-  $('#start, #controls, #score div:nth-child(3)').hide();
+  $('#start, #controls, #score div:nth-child(3), #hi-score').hide();
   $('#stop').show();
   $('#score, #hints').css('visibility', 'visible');
   $('#level-btns').css('visibility', 'hidden');
@@ -229,6 +231,13 @@ function updateLevelBtns() {
   $('#level-btns div').each((i,div)=>{
     if (i < gs.levelsUnlocked) $(div).addClass('unlocked');
   });
+}
+
+function updateHighScore() {
+  if (!gs.highScore) return;
+
+  $('#hi-score').show();
+  $('#hi-wrapper :nth-child(2)').html(`${gs.highScore} pts`);
 }
 
 function updateHints() {
@@ -285,7 +294,14 @@ function updateGameState() {
 
   if (gs.rightEnemies.indexOf(gs.playerIndex)+
       gs.leftEnemies.indexOf(gs.playerIndex) > -2) {
-    alert("Gameover :(");
+
+    if (gs.score > gs.highScore) {
+      gs.highScore = gs.score;
+      alert(`Game over - but hey, ${gs.score} is a new high score!`);
+    } else {
+      alert("Game over :(");
+    }
+
     setTimeout(()=>$('#stop').click(), 500);
     return;
   }

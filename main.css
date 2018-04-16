@@ -89,6 +89,44 @@ body {
   color: #888;
 }
 
+#hi-score {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 130px;
+  height: 130px;
+  background: linear-gradient(
+    225deg,
+    white,
+    white 50%,
+    transparent 51%,
+    transparent
+  );
+  user-select: none;
+  display: none;
+}
+#hi-cropper {
+  width: 130px;
+  height: 130px;
+  position: relative;
+  overflow: hidden;
+}
+#hi-wrapper {
+  transform: rotate(45deg) translate(21%,-15%);
+  text-align: center;
+  width: 130px;
+  font-size: 30px;
+  color: #555;
+}
+#hi-wrapper :nth-child(1) {
+  font-weight: 100;
+  font-size: 18px;
+}
+#hi-wrapper :nth-child(2) {
+  margin-top: -3px;
+  font-size: 32px;
+}
+
 #score {
   display: flex;
   flex-direction: column;
