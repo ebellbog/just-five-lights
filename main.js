@@ -165,6 +165,8 @@ function startLevel() {
     $('#score div:nth-child(3)').html(`x${multiplier}`).show();
   }
 
+  $('#lvl-number').html(`Level ${gs.level}`);
+
   updateHints();
 }
 
@@ -316,7 +318,7 @@ function gameOver() {
       alert("Game over :(");
     }
     setTimeout(endGame, 300);
-  }, 1600);
+  }, 1500);
 }
 
 function updateGameState() {
