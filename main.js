@@ -121,20 +121,7 @@ $(document).ready(function() {
 
   $('#stop').click(function(){
     if (!gs.updating) return;
-
-    $(this).hide();
-    $('#start, #controls').show();
-    $('#score, #hints').css('visibility', 'hidden');
-
-    gs.playing = false;
-    gs.updating = false;
-
-    resetColors();
-    if (gs.mode == 'pc') updateLights();
-    else resetLights();
-
-    updateLevelBtns();
-    updateHighScore();
+    endGame();
   });
 
   $('#level-btns').on('click','.unlocked', (e)=>{
@@ -289,20 +276,55 @@ function updateHints() {
   }
 }
 
-function updateGameState() {
-  if (!gs.updating) return;
+function endGame() {
+  $('#start, #controls').show();
+  $('#score, #hints').css('visibility', 'hidden');
+  $('#stop').hide();
 
-  if (gs.rightEnemies.indexOf(gs.playerIndex)+
-      gs.leftEnemies.indexOf(gs.playerIndex) > -2) {
+  gs.playing = false;
+  gs.updating = false;
 
+  resetColors();
+  if (gs.mode == 'pc') updateLights();
+  else resetLights();
+
+  updateLevelBtns();
+  updateHighScore();
+}
+
+function gameOver() {
+  gs.updating = false;
+
+  var light = gs.playerIndex;
+  var losingColor = gs.colors[light];
+
+  var func = (light, color)=>{
+    gs.colors[light] = color;
+    updateLights();
+  };
+
+  for (var i=0; i<4; i++) {
+    var color = i%2 ? losingColor : white;
+    setTimeout(func.bind(null, light, color), 350*i);
+  }
+
+  setTimeout(()=>{
     if (gs.score > gs.highScore) {
       gs.highScore = gs.score;
       alert(`Game over - but hey, ${gs.score} is a new high score!`);
     } else {
       alert("Game over :(");
     }
+    setTimeout(endGame, 300);
+  }, 1600);
+}
 
-    setTimeout(()=>$('#stop').click(), 500);
+function updateGameState() {
+  if (!gs.updating) return;
+
+  if (gs.rightEnemies.indexOf(gs.playerIndex)+
+      gs.leftEnemies.indexOf(gs.playerIndex) > -2) {
+    gameOver();
     return;
   }
 
