@@ -564,7 +564,7 @@ function resetColors() {
 function resetLights() {
   for (var i=0; i<5; i++) {
     setLight(gs.lightMapping[i],
-             '{"hue":10000, "bri":200, "sat":75}');
+             '{"on":true, "hue":10000, "bri":200, "sat":75}');
   }
 }
 
