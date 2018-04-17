@@ -94,7 +94,7 @@ $(document).ready(function() {
     $.ajax({
       type: 'GET',
       dataType: 'json',
-      url: `http://${currIp}/api/${currId}/`,
+      url: `https://${currIp}/api/${currId}/`,
       success: function(data) {
         if (data.length==1 && data[0].error) {
           alert("Invalid user ID");
@@ -103,7 +103,8 @@ $(document).ready(function() {
         else calibrateLights(data);
       },
       error: function(data) {
-        alert ('Invalid IP address');
+        alert ('Invalid IP address. Please make sure your '+
+               'Hue bridge has the latest firmware.');
         $('#spinner-wrapper').hide();
       }
     });
@@ -319,9 +320,9 @@ function gameOver() {
     updateLights();
   };
 
-  for (var i=0; i<4; i++) {
+  for (var i=0; i<6; i++) {
     var color = i%2 ? losingColor : white;
-    setTimeout(func.bind(null, light, color), 350*i);
+    setTimeout(func.bind(null, light, color), 250*i);
   }
 
   setTimeout(()=>{
@@ -332,7 +333,7 @@ function gameOver() {
       alert("Game over :(");
     }
     setTimeout(endGame, 300);
-  }, 1500);
+  }, 1900);
 }
 
 function updateGameState() {
@@ -531,7 +532,7 @@ function setLight(light, state) {
     type: 'PUT',
     dataType: 'json',
     data: state,
-    url: `http://${currIp}/api/${currId}/lights/${light}/state`,
+    url: `https://${currIp}/api/${currId}/lights/${light}/state`,
     success: ()=>{
       var latency = Date.now()-reqStart;
       if (latency > 250) gs.latencyWarnings++;
