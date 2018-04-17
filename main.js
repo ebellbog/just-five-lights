@@ -94,7 +94,7 @@ $(document).ready(function() {
     $.ajax({
       type: 'GET',
       dataType: 'json',
-      url: `https://${currIp}/api/${currId}/`,
+      url: `http://${currIp}/api/${currId}/`,
       success: function(data) {
         if (data.length==1 && data[0].error) {
           alert("Invalid user ID");
@@ -103,8 +103,7 @@ $(document).ready(function() {
         else calibrateLights(data);
       },
       error: function(data) {
-        alert ('Invalid IP address. Please make sure your '+
-               'Hue bridge has the latest firmware.');
+        alert ('Invalid IP address');
         $('#spinner-wrapper').hide();
       }
     });
@@ -532,7 +531,7 @@ function setLight(light, state) {
     type: 'PUT',
     dataType: 'json',
     data: state,
-    url: `https://${currIp}/api/${currId}/lights/${light}/state`,
+    url: `http://${currIp}/api/${currId}/lights/${light}/state`,
     success: ()=>{
       var latency = Date.now()-reqStart;
       if (latency > 250) gs.latencyWarnings++;
