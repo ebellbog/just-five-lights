@@ -15,8 +15,13 @@ levelData = [
   {'multiplier': 5, 'duration': 1000}
 ]
 
-gs = {
+cs = { // calibration state
   calibrating: false,
+  reachable: [],
+  index: -1
+}
+
+gs = { // game state
   mode: 'pc',
   playing: false,
   levelsUnlocked: 0,
@@ -80,8 +85,12 @@ $(document).ready(function() {
   });
 
   $('#calibrate').click(function(){
+    if (cs.calibrating) return;
+    $('#spinner-wrapper').show();
+
     var currIp = $('#ip-address').val();
     var currId = $('#user-id').val();
+
     $.ajax({
       type: 'GET',
       dataType: 'json',
@@ -89,33 +98,38 @@ $(document).ready(function() {
       success: function(data) {
         if (data.length==1 && data[0].error) {
           alert("Invalid user ID");
+          $('#spinner-wrapper').hide();
         }
         else calibrateLights(data);
       },
       error: function(data) {
         alert ('Invalid IP address');
+        $('#spinner-wrapper').hide();
       }
     });
   });
 
-  $('.light').click(function(){
-    if (!gs.calibrating) return;
+  $('.light').click(function(e){
+    e.stopPropagation();
+    if (!cs.calibrating) return;
 
     var clickedIndex = $(this).index()-1;
-    gs.lightMapping[clickedIndex] = lights[lightIndex];
+    gs.lightMapping[clickedIndex] = cs.reachable[cs.index];
 
-    setLight(lights[lightIndex], '{"on": false}');
-    lightIndex++;
-    if (lightIndex < lights.length) {
-      setLight(lights[lightIndex], '{"on": true, "bri": 180}');
-    } else {
-      gs.calibrating = false;
-      setTimeout(()=>flourishLights(), 1000);
-    }
+    advanceCalibration();
+  });
+
+  $('body').click(function() {
+    if (!cs.calibrating || cs.reachable.length == 5) return;
+    advanceCalibration();
   });
 
   $('#start').click(function(){
     if (gs.playing) return;
+    if (cs.calibrating) {
+      alert("Please click circles to finish calibrating.");
+      return;
+    }
     startGame();
   });
 
@@ -432,17 +446,36 @@ function updateLights() {
 }
 
 function calibrateLights(data) {
-  lights = getReachableLights(data);
-  if (lights.length < 5) {
+  cs.reachable = getReachableLights(data);
+  if (cs.reachable.length < 5) {
     alert("Not enough lights available");
     return;
   }
 
-  gs.calibrating = true;
-  lightIndex = 0;
+  alert("Click the circle corresponding to each light that "+
+        "turns on. To skip a light, click anywhere else.");
 
-  turnOffLights(lights);
-  setLight(lights[lightIndex], '{"on": true, "bri": 180}');
+  cs.calibrating = true;
+  cs.index = 0;
+
+  turnOffLights(cs.reachable);
+  setLight(cs.reachable[0], '{"on": true, "bri": 200}');
+}
+
+function advanceCalibration() {
+  if (!(cs.reachable && cs.index > -1)) return;
+
+  setLight(cs.reachable[cs.index], '{"on": false}');
+  cs.index++;
+  if (cs.index < cs.reachable.length) {
+    setLight(cs.reachable[cs.index], '{"on": true, "bri": 200}');
+  } else {
+    cs.calibrating = false;
+    cs.index = -1;
+
+    $('#spinner-wrapper').hide();
+    setTimeout(()=>flourishLights(), 1000);
+  }
 }
 
 function getReachableLights(data) {
@@ -461,8 +494,8 @@ function turnOffLights(lights) {
       setLight(lights[i], state);
     }
   } else if (gs.mode == 'hue') {
-    for (var i=0; i<5; i++) {
-      setLight(lightMapping[i], state);
+    for (var i = 0; i < gs.lightMapping.length; i++) {
+      setLight(gs.lightMapping[i], state);
     }
   } else {
     gs.colors = [];
@@ -476,7 +509,7 @@ function turnOffLights(lights) {
 function flashLights() {
   if (gs.mode == 'hue') {
     for (var i=0; i<5; i++) {
-      setLight(lightMapping[i],
+      setLight(gs.lightMapping[i],
           '{"on": true, "bri": 254, "sat":0, "transitiontime":0}'
       );
     }

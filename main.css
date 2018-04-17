@@ -374,3 +374,17 @@ body {
   font-size: 30px;
   margin: 0 1px 0 1px;
 }
+
+#spinner-wrapper {
+  color: #ccc;
+  position: absolute;
+  left: 50%;
+  bottom: 27px;
+  width: 3px;
+  height: 6px;
+  overflow: hidden;
+  padding: 13px;
+  transform: translate(70px,0);
+  font-size: 4px;
+  display: none;
+}
