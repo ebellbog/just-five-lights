@@ -162,6 +162,7 @@ $(document).ready(function() {
     if (gs.updating) {
       updateColors();
       updateLights();
+      testSurvival();
     }
   });
 });
@@ -335,14 +336,18 @@ function gameOver() {
   }, 1900);
 }
 
-function updateGameState() {
-  if (!gs.updating) return;
-
+function testSurvival() {
   if (gs.rightEnemies.indexOf(gs.playerIndex)+
       gs.leftEnemies.indexOf(gs.playerIndex) > -2) {
     gameOver();
     return;
   }
+}
+
+function updateGameState() {
+  if (!gs.updating) return;
+
+  testSurvival();
 
   gs.leftEnemies = gs.leftEnemies.reduce((c,v)=>{
     if (v>0) c.push(v-1);
