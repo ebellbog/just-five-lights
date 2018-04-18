@@ -165,6 +165,9 @@ $(document).ready(function() {
       updateLights();
     }
   });
+
+  // attempt redirect to http host
+  window.top.location.href="http://elanabellbogdan.com/just_five_lights";
 });
 
 function startLevel() {
