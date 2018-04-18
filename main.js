@@ -341,14 +341,14 @@ function testSurvival() {
   if (gs.rightEnemies.indexOf(gs.playerIndex)+
       gs.leftEnemies.indexOf(gs.playerIndex) > -2) {
     gameOver();
-    return;
+    return false;
   }
+  return true;
 }
 
 function updateGameState() {
   if (!gs.updating) return;
-
-  testSurvival();
+  if (!testSurvival()) return;
 
   gs.leftEnemies = gs.leftEnemies.reduce((c,v)=>{
     if (v>0) c.push(v-1);
