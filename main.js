@@ -357,6 +357,7 @@ function updateGameState() {
 
   switch (gs.level) {
     case 1:
+      if (Date.now()-gs.startTime < 1200) break;
       if (Math.random() > 0.7 && gs.rightEnemies.length == 0) {
         addRightEnemy();
       }

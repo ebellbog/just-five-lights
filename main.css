@@ -182,10 +182,6 @@ body {
   z-index: 1;
 }
 
-.light:hover {
-  background-color: #888!important;
-}
-
 .light.inactive {
   background-image: radial-gradient(white, black);
 }
