@@ -37,3 +37,21 @@ body {
   border-radius: 33px;
   left: 20%;
 }
+
+.red {
+  position: absolute;
+  top: 50%;
+  left: 230px;
+  width: 150px;
+  height: 100px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    red,
+    red,
+    transparent
+  );
+  z-index: 2;
+  transform: translate(0,-50%);
+  mix-blend-mode: multiply;
+}

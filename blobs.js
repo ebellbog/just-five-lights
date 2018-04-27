@@ -1,6 +1,23 @@
-gs = {
+const small = {
+  width: '10px',
+  height: '10px',
+  'border-radius': '5px'
+}
+const medium = {
+  width: '66px',
+  height: '66px',
+  'border-radius': '33px'
+}
+const large = {
+  width: '78px',
+  height: '78px',
+  'border-radius': '39px'
+}
+
+let gs = {
   playerIndex: 0,
   moving: false,
+  moves: [],
   duration: 400,
   increment: 0
 }
@@ -14,77 +31,67 @@ $(document).ready(function(){
   }
 
   $('body').keydown(function(e) {
-    var small = {
-      width: '10px',
-      height: '10px',
-      'border-radius': '5px'
-    };
-
-    var medium = {
-      width: '66px',
-      height: '66px',
-      'border-radius': '33px'
-    };
-
-    var large = {
-      width: '78px',
-      height: '78px',
-      'border-radius': '39px'
-    };
 
     switch(e.which) {
       case 37:
-        if (gs.moving) return;
-        if (gs.playerIndex == 0) {
-          gs.playerIndex = 4;
-          gs.moving = true;
-          $('.player').animate(
-            small, 
-            gs.duration/3, ()=>{
-              $('.player').css('left','80%');
-              $('.player').animate(
-                large, 
-                gs.duration/3, 
-                ()=>{
-                  $('.player').animate(
-                    medium,
-                    200,
-                    ()=>gs.moving=false)})
-            });
-        } else {
-          gs.playerIndex--;
-          gs.moving = true;
-          $('.player').animate({left: `${gs.playerIndex*15+20}%`}, 
-                                gs.duration, 
-                                ()=>{gs.moving=false});
-        }
+        enqueueMove(1);
         break;
       case 39:
-        if (gs.moving) return;
-        if (gs.playerIndex == 4) {
-          gs.playerIndex = 0;
-          gs.moving = true;
-          $('.player').animate(
-            small, 
-            gs.duration/3, ()=>{
-              $('.player').css('left','20%');
-              $('.player').animate(
-                large, 
-                gs.duration/3, 
-                ()=>{
-                  $('.player').animate(
-                    medium,
-                    200,
-                    ()=>gs.moving=false)})
-            });
-        } else {
-          gs.playerIndex++;
-          gs.moving = true;
-          $('.player').animate({left: `${gs.playerIndex*15+20}%`}, 
-                                gs.duration, 
-                                ()=>{gs.moving=false});
-        }
+        enqueueMove(0);
+        break;
+      case 68:
+        $('.red').animate({'left':'+=40'},200);
+        break;
+      case 65:
+        $('.red').animate({'left':'-=40'},200);
+        break;
+      default:
         break;
     }
   });
 });
+
+// 1 = left, 0 = right
+function movePlayer(direction) {
+  if (gs.playerIndex == (direction ? 0 : 4)) {
+    gs.playerIndex = direction ? 4 : 0;
+    gs.moving = true;
+    $('.player').animate(
+        small,
+        gs.duration/3, ()=>{
+          $('.player').css('left', direction ? '80%' : '20%');
+          $('.player').animate(
+            large,
+            gs.duration/3,
+            ()=>{
+              $('.player').animate(
+                medium,
+                200,
+                ()=>processQueue())})
+        });
+  } else {
+    gs.playerIndex += direction ? -1 : 1;
+    gs.moving = true;
+    $('.player').animate({left: `${gs.playerIndex*15+20}%`},
+        gs.duration,
+        ()=>processQueue());
+  }
+}
+
+function enqueueMove(direction) {
+  if (gs.moves.length < 2) {
+    gs.moves.push(direction);
+  }
+  if (!gs.moving) {
+    gs.moving = true;
+    processQueue();
+  }
+}
+
+function processQueue() {
+  if (gs.moving && gs.moves.length) {
+    movePlayer(gs.moves.shift());
+  } else {
+    gs.moving = false;
+  }
+}
