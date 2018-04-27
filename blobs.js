@@ -16,6 +16,7 @@ const large = {
 
 let gs = {
   playerIndex: 0,
+  enemyIndex: 0,
   moving: false,
   moves: [],
   duration: 400,
@@ -30,6 +31,8 @@ $(document).ready(function(){
     $lights.append($newLight);
   }
 
+  updateEnemy();
+
   $('body').keydown(function(e) {
 
     switch(e.which) {
@@ -40,16 +43,25 @@ $(document).ready(function(){
         enqueueMove(0);
         break;
       case 68:
-        $('.red').animate({'left':'+=40'},200);
+        gs.enemyIndex +=1;
+        updateEnemy();
         break;
       case 65:
-        $('.red').animate({'left':'-=40'},200);
+        gs.enemyIndex -=1;
+        updateEnemy();
         break;
       default:
         break;
     }
   });
 });
+
+function updateEnemy() {
+  var left = $(`.light:nth-child(${gs.enemyIndex+2})`)
+             .position().left;
+  $('.red').animate({'left':left},200);
+
+}
 
 // 1 = left, 0 = right
 function movePlayer(direction) {
